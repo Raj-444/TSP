@@ -1,0 +1,48 @@
+Build a complete frontend web application called "Smart Delivery Route Optimizer".
+
+Tech Stack:
+
+* HTML
+* CSS
+* Vanilla JavaScript
+* Leaflet.js
+* OpenStreetMap
+* OpenRouteService API
+
+Requirements:
+
+1. Create a modern responsive dashboard UI.
+2. Display a full-screen interactive map.
+3. Users can click on the map to add delivery locations.
+4. Show markers with numbered labels.
+5. Maintain a delivery location list in a sidebar.
+6. Add a button called "Optimize Route".
+7. Implement Nearest Neighbor Travelling Salesman heuristic.
+8. Reorder locations according to optimized sequence.
+9. Draw the route on the map.
+10. Show:
+
+* Total Distance
+* Estimated Travel Time
+* Total Stops
+
+11. Add a "Clear Route" button.
+12. Use modular JavaScript files.
+13. Use local state management only.
+14. Mobile responsive design.
+15. Professional UI similar to Uber Dispatch Dashboard.
+16. Use CSS variables and clean component structure.
+17. Add loading states and error handling.
+18. No frameworks.
+19. No backend.
+20. Code should be production-ready and fully commented.
+
+Bonus:
+
+* Dark mode toggle
+* Route export to JSON
+* Driver information card
+* Animated route drawing
+* Delivery statistics panel
+
+Generate the complete project structure and all source code files.

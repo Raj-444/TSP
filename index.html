@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Delivery Route Optimizer</title>
+    
+    <!-- Google Fonts: Inter & Outfit -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Leaflet Map CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Top Navbar -->
+        <header class="header">
+            <div class="logo-area">
+                <div class="logo-icon">
+                    <i class="fa-solid fa-route"></i>
+                </div>
+                <div class="logo-text">
+                    <h1>SmartRoute<span>Optima</span></h1>
+                    <span class="badge">v1.0.0</span>
+                </div>
+            </div>
+            
+            <div class="header-actions">
+                <div id="route-status-indicator" class="status-indicator idle">
+                    <span class="status-dot"></span>
+                    <span class="status-text">No Route Defined</span>
+                </div>
+                
+                <button id="btn-settings" class="icon-button" title="Configure APIs & Rules" aria-label="Settings">
+                    <i class="fa-solid fa-sliders"></i>
+                </button>
+                
+                <button id="btn-theme-toggle" class="icon-button" title="Toggle Theme" aria-label="Theme Toggle">
+                    <i class="fa-solid fa-moon"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Content Area -->
+        <div class="main-content">
+            <!-- Sidebar Panel -->
+            <aside class="sidebar">
+                <!-- Driver Profile Card -->
+                <div class="glass-card driver-card">
+                    <div class="driver-avatar">
+                        <i class="fa-solid fa-user-tie"></i>
+                    </div>
+                    <div class="driver-info">
+                        <h3>Mr. Delivery Pro</h3>
+                        <p class="driver-role"><i class="fa-solid fa-truck-ramp-box"></i> Fleet Driver #42</p>
+                        <div class="driver-meta">
+                            <span class="rating"><i class="fa-solid fa-star"></i> 4.9</span>
+                            <span class="vehicle-tag"><i class="fa-solid fa-truck"></i> Delivery Van</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Locations Sidebar -->
+                <div class="glass-card flex-grow-card stops-container">
+                    <div class="card-header">
+                        <h2><i class="fa-solid fa-location-dot"></i> Delivery Locations</h2>
+                        <button id="btn-clear-all" class="text-button text-danger" title="Clear all locations">
+                            <i class="fa-solid fa-trash-can"></i> Clear All
+                        </button>
+                    </div>
+
+                    <!-- Google Maps Style Directions Panel -->
+                    <div class="directions-panel">
+                        <!-- Mode of Transport Tabs -->
+                        <div class="transport-tabs">
+                            <button class="tab-btn active" data-profile="driving-car" title="Car / Driving">
+                                <i class="fa-solid fa-car"></i>
+                            </button>
+                            <button class="tab-btn" data-profile="driving-hgv" title="Heavy Truck (HGV)">
+                                <i class="fa-solid fa-truck"></i>
+                            </button>
+                            <button class="tab-btn" data-profile="cycling-regular" title="Bicycle">
+                                <i class="fa-solid fa-bicycle"></i>
+                            </button>
+                            <button class="tab-btn" data-profile="foot-walking" title="Walking">
+                                <i class="fa-solid fa-person-walking"></i>
+                            </button>
+                        </div>
+
+                        <!-- Inputs Grid -->
+                        <div class="inputs-row">
+                            <!-- Left: Connecting vertical dots indicator -->
+                            <div class="indicator-column">
+                                <div class="dot-circle start-dot" title="Starting Depot"></div>
+                                <div class="connecting-line"></div>
+                                <div class="dot-circle end-dot" title="Delivery Stops"></div>
+                            </div>
+                            
+                            <!-- Middle: Inputs -->
+                            <div class="inputs-column">
+                                <div class="search-input-wrapper">
+                                    <input type="text" id="start-location-input" placeholder="Choose starting point (Depot)..." autocomplete="off">
+                                    <button id="clear-start-btn" class="clear-input-btn hidden" title="Clear Start">&times;</button>
+                                </div>
+                                <div class="search-input-wrapper">
+                                    <input type="text" id="stop-location-input" placeholder="Add delivery stop..." autocomplete="off">
+                                    <button id="clear-stop-btn" class="clear-input-btn hidden" title="Clear Stop">&times;</button>
+                                </div>
+                            </div>
+                            
+                            <!-- Right: Swap Button -->
+                            <div class="action-column">
+                                <button id="btn-swap-locations" class="swap-button" title="Swap Start and First Stop">
+                                    <i class="fa-solid fa-arrows-up-down"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Suggestions dropdown (floats underneath) -->
+                        <ul id="search-suggestions" class="search-results hidden"></ul>
+                    </div>
+
+                    <!-- Empty State Message -->
+                    <div id="empty-state" class="empty-state">
+                        <div class="empty-icon">
+                            <i class="fa-solid fa-map-location-dot"></i>
+                        </div>
+                        <h3>No Locations Added</h3>
+                        <p>Click on the map or use search to add delivery stops. Your first stop acts as the starting point (depot).</p>
+                    </div>
+
+                    <!-- Stops List -->
+                    <ul id="stops-list" class="stops-list hidden">
+                        <!-- Items dynamically injected here -->
+                    </ul>
+                </div>
+
+                <!-- Operations Controls -->
+                <div class="glass-card operations-panel">
+                    <button id="btn-optimize" class="btn btn-primary btn-block" disabled>
+                        <i class="fa-solid fa-bolt"></i> Optimize Route
+                    </button>
+                    
+                    <div class="action-grid">
+                        <button id="btn-export" class="btn btn-secondary" title="Export Route as JSON File" disabled>
+                            <i class="fa-solid fa-download"></i> Export JSON
+                        </button>
+                        <button id="btn-save" class="btn btn-secondary" title="Save Route to Local Browser Storage" disabled>
+                            <i class="fa-solid fa-bookmark"></i> Save Route
+                        </button>
+                    </div>
+                    
+                    <!-- Saved Routes Dropdown -->
+                    <div class="saved-routes-selector">
+                        <label for="select-saved-routes"><i class="fa-solid fa-history"></i> Load Saved Route</label>
+                        <select id="select-saved-routes" class="select-input">
+                            <option value="" disabled selected>Select a saved route...</option>
+                        </select>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Map View Area -->
+            <main class="map-view-container">
+                <!-- The Map Element -->
+                <div id="map"></div>
+
+                <!-- Floating Statistics Dashboard Overlay -->
+                <section class="stats-dashboard glass-card">
+                    <div class="stat-card">
+                        <div class="stat-icon purple">
+                            <i class="fa-solid fa-flag"></i>
+                        </div>
+                        <div class="stat-details">
+                            <span class="stat-label">Total Stops</span>
+                            <span id="stat-stops" class="stat-value">0</span>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon blue">
+                            <i class="fa-solid fa-road"></i>
+                        </div>
+                        <div class="stat-details">
+                            <span class="stat-label">Total Distance</span>
+                            <span id="stat-distance" class="stat-value">0.0 km</span>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon green">
+                            <i class="fa-solid fa-clock"></i>
+                        </div>
+                        <div class="stat-details">
+                            <span class="stat-label">Est. Travel Time</span>
+                            <span id="stat-time" class="stat-value">0 mins</span>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon orange">
+                            <i class="fa-solid fa-leaf"></i>
+                        </div>
+                        <div class="stat-details">
+                            <span class="stat-label">Fuel Saving</span>
+                            <span id="stat-savings" class="stat-value">0%</span>
+                        </div>
+                    </div>
+                </section>
+            </main>
+            
+            <!-- Mobile Map/List View Toggle -->
+            <button id="btn-mobile-toggle" class="mobile-toggle-btn" aria-label="Toggle Map/List View">
+                <i class="fa-solid fa-map"></i>
+                <span>View Map</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Configuration / Settings Modal -->
+    <div id="settings-modal" class="modal-backdrop hidden">
+        <div class="modal glass-card">
+            <div class="modal-header">
+                <h2><i class="fa-solid fa-sliders"></i> Configuration & Settings</h2>
+                <button id="btn-close-settings" class="modal-close-button">&times;</button>
+            </div>
+            
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="ors-api-key">OpenRouteService API Key</label>
+                    <div class="input-with-icon">
+                        <i class="fa-solid fa-key"></i>
+                        <input type="password" id="ors-api-key" placeholder="Enter ORS API Key..." autocomplete="off">
+                    </div>
+                    <p class="help-text">A valid OpenRouteService API Key is required to calculate actual driving routes. Get one for free at <a href="https://openrouteservice.org" target="_blank" rel="noopener">openrouteservice.org</a>.</p>
+                </div>
+                
+                <div class="form-group">
+                    <label for="optimization-mode">Optimization Loop Mode</label>
+                    <select id="optimization-mode" class="select-input">
+                        <option value="closed">Round Trip (Return to Start)</option>
+                        <option value="open">One Way (End at Last Stop)</option>
+                    </select>
+                    <p class="help-text">Round trip forces the driver to return to the depot (first stop) after completing all deliveries.</p>
+                </div>
+
+                <div class="form-group">
+                    <label for="transport-profile">Transport Profile</label>
+                    <select id="transport-profile" class="select-input">
+                        <option value="driving-car" selected>Car / Delivery Van (Driving)</option>
+                        <option value="driving-hgv">Heavy Goods Vehicle (HGV)</option>
+                        <option value="cycling-regular">Bicycle (Cycling)</option>
+                        <option value="foot-walking">Walking / Foot</option>
+                    </select>
+                    <p class="help-text">Adjust routing path and time estimates based on selected vehicle profile.</p>
+                </div>
+            </div>
+            
+            <div class="modal-footer">
+                <button id="btn-save-settings" class="btn btn-primary">Save Settings</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Spinner Loading Overlay -->
+    <div id="loading-overlay" class="loading-overlay hidden">
+        <div class="spinner-container">
+            <div class="spinner"></div>
+            <p id="loading-message">Calculating optimal route...</p>
+        </div>
+    </div>
+
+    <!-- Toast Notifications Container -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- Leaflet Map JS dependencies -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    
+    <!-- ES6 Modules Entry Point -->
+    <script type="module" src="js/app.js"></script>
+</body>
+</html>

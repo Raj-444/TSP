@@ -1,0 +1,10 @@
+# IDEs and Editors
+.idea/
+.vscode/
+.gemini/
+*.log
+.system_generated/
+
+# OS Files
+.DS_Store
+Thumbs.db
